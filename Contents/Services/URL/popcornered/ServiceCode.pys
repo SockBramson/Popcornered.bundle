@@ -1,29 +1,16 @@
 
-# These are python variables you set up for use later in this file   
-# The naming and values are based on the where and how you choose to use them in your code
-# For the most part, you are defining variables you will use in the PlayVideo function
 BASE_URL = 'http://popcornered.com/'
-# It is best practice to use regex when possible and avoid importing any Python modules, so below is a regex statement I use
-# later in my PlayVideo function to find the video info xml address within the page that allows me to easily pull the 
-# web pages corresponding video file location
-# mp4 ogv and webm are supported by site.
 VIDLINK = Regex('media/(.+?)\.mp4')
-# The variable below is basic regex to pull a video from an html page.  I show its use in a optional version of the PlayVideo function
-# RE_VIDEO_URL = Regex('videofile:"(?P<video_url>[^"]+)"')
-# IMPORTANT NOTE: THE VALUE OF 'URL' THAT IS PASSED TO THE DIFFERENT FUNCTIONS IN THIS PROGRAM IS DETERMINED EITHER 
-# WITHIN THE PROGRAMMING OF THE INDIVIDUAL CHANNEL PLUGIN THAT USES THIS URL SERVICE OR BY THE END USER CHOOSING THE PLEXIT BUTTON
+COVER = Regex('covers/(.+)\.png')
 
 ####################################################################################################
-# This pulls the metadata that is used for Plexit, suggested videos (to friends), the pre-play screen on iOS, Roku, Android and Plex/Web, 
-# as well as if you get the "info" or "details" within the OSX/Windows/Linux desktop client.
-# Afer you pull the data you should save it to preset variables.  These basic variables are title, summary, and thumb. 
-# but some also include duration, and originally_available_at, content_rating, show, tags and index 
 
 def MetadataObjectForURL(url):
 
 	page = HTML.ElementFromURL(url)
 	title = page.xpath("/html/head/title/text()")[0] # Try .text and see what difference is .get('content')
 	description = page.xpath("/html/body/div[1]/section/div/div/p/text()")[0] #.get('content')
+	#Log('Thumbnail: {}'.format, thumb)
 	thumb = page.xpath('/html/body/div[1]/section/div/div/div[1]/div/iframe/@data-poster')[0] #.get('url')	
 
 	return MovieObject(
@@ -40,7 +27,7 @@ def MediaObjectsForURL(url):
 		MediaObject(
 			video_codec = VideoCodec.H264,
 			audio_codec = AudioCodec.AAC,
-			video_resolution = '1080',
+			video_resolution = '1072',
 			audio_channels = 2,
 			container = 'MP4',
 			parts = [PartObject(key=Callback(PlayVideo, url = url))]
@@ -49,15 +36,6 @@ def MediaObjectsForURL(url):
 	]
 
 ####################################################################################################
-# Here we are defining the PlayVideo function we called in the callback function above. This function defines the pattern for 
-# the location and naming scheme of the video so we can play the video file directly. You use HTML request, regular expressions,
-# and predefined variables to create the path or http address of the video associated with the html or xml page that was sent 
-# to this service through the "URL" value. The programming here will vary greatly based on the location of the 
-# video file related to your video pages. This is where you will be doing the majority to the programming.
-# It is best to refer to other services already created for examples of how to pull the video file.
-
-# First we define the function taking the the variables for the url entered into the service and the
-# fmt variable we established above in MediaObjects
 @indirect
 def PlayVideo(url):
 
