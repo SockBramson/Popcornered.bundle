@@ -1,0 +1,48 @@
+
+BASE_URL = 'http://popcornered.com/'
+VIDLINK = Regex('media/(.+?)\.mp4')
+COVER = Regex('covers/(.+)\.png')
+
+####################################################################################################
+
+def MetadataObjectForURL(url):
+
+	page = HTML.ElementFromURL(url)
+	title = page.xpath("/html/head/title/text()")[0] # Try .text and see what difference is .get('content')
+	description = page.xpath("/html/body/div[1]/section/div/div/p/text()")[0] #.get('content')
+	#Log('Thumbnail: {}'.format, thumb)
+	thumb = page.xpath('/html/body/div[1]/section/div/div/div[1]/div/iframe/@data-poster')[0] #.get('url')	
+
+	return MovieObject(
+		title = title,
+		summary = description,
+		thumb = thumb,
+	)
+####################################################################################################
+
+def MediaObjectsForURL(url):
+	return [
+
+
+		MediaObject(
+			video_codec = VideoCodec.H264,
+			audio_codec = AudioCodec.AAC,
+			video_resolution = '1072',
+			audio_channels = 2,
+			container = 'MP4',
+			parts = [PartObject(key=Callback(PlayVideo, url = url))]
+		)
+
+	]
+
+####################################################################################################
+@indirect
+def PlayVideo(url):
+
+	page = HTTP.Request(url).content
+	video = VIDLINK.search(page).group(0).replace('"','')
+	Log(video)
+	video = BASE_URL + video
+	Log(video)
+	
+	return IndirectResponse(MovieObject, key=video)
