@@ -1,10 +1,11 @@
-SEARCH_URL = 'http://www.tvland.com/search?keywords=%s'
-TVLAND_URL = 'http://www.tvland.com'
+SEARCH_URL = 'http://popcornered.com/search.php'
+BASE_URL = 'http://www.popcornered.com'
 
 ####################################################################################################
 def Search(query):
     oc = ObjectContainer()
   
+    # I think I want to use HTTP.Request(SEARCH_URL, data={}).format(query) 
     local_url = SEARCH_URL %String.Quote(query, usePlus = True)
     html = HTML.ElementFromURL(local_url)
     for episode in html.xpath('//div[@class="search_content"]'):
