@@ -77,8 +77,8 @@ def movies(title, url, page=1):
             fullurl = BASEURL + 'films/?films=' + item
             Site = HTML.ElementFromURL(fullurl)
             title = Site.xpath("/html/head/title/text()")[0]
-            description = Site.xpath('//*[@class="movie__describe"]/text()')[0]
-            Log('getmeta: {}'.format(GetMeta(url, datecount)))
+            #description = Site.xpath('//*[@class="movie__describe"]/text()')[0]
+            description = GetMeta(fullurl)
             #Log(Site.xpath('//param[contains(@name, "playerID")]')[0].get('value'))
             # Currently only some thumbnails exist in beta site. Try to pull those first.
             thumb = GetThumb(title)
@@ -134,6 +134,8 @@ def tvseries(title, url):
 @route(PREFIX + '/getthumb')
 
 def GetThumb(title):
+    for ch in ['/']:
+        title = title.replace(ch,"")
     try:
         title = title.replace(" ","") + '.png'
         thumb = BASEURL +'covers/' + title
@@ -147,15 +149,20 @@ def GetThumb(title):
             pass
         thumb = 'http://popcornered.com/video/1.jpg'
     Log('GetThumb is {}'.format(thumb))
-    return thumb
+    return(thumb)
     
 #############################################################################################################################
 @route(PREFIX + '/getmeta')
-def GetMeta(url, number):
+def GetMeta(url):
     metapage = HTML.ElementFromURL(url)
     try:
-        description = metapage.xpath('//*[@class="movie movie--preview release"]/div[2]/p[5]/a/text()')[number]
-    except:
+        description = metapage.xpath('//*[@class="movie__describe"]/text()')
+        #for ch in ['["\n', '\n"]', '[\'\n', '\n\']']:
+        #    description = description.replace(ch, "")
+        description = str(description)
+        if description.startswith('['):
+            description = description[4:-4]
+    except(IndexError):
         description = 'The Ute\'s buggered.'
-    return Redirect(description)    
+    return(description)
     
